@@ -1,17 +1,3 @@
-#!/usr/bin/env python3
-"""
-Generate all metrics and figures needed for the DAFx26 poster.
-Produces:
-  - poster_metrics.txt         : all numbers to copy into poster
-  - fig_codebook_analysis.png  : UMAP + PCA + cluster heatmap (already have, regenerated)
-  - fig_velocity_distribution.png : training vs predicted velocity side by side
-  - fig_input_output_table.png : example inputs → codebook cluster table
-  - fig_pipeline.png           : system pipeline diagram
-
-Usage:
-    python generate_poster_assets.py
-"""
-
 import os
 import sys
 import pickle
@@ -28,7 +14,6 @@ sys.path.insert(0, ".")
 from utils.model import VQVAE
 from train_phase2 import Phase2VelocityModel
 
-# ── Config ────────────────────────────────────────────────────────────────────
 PHASE1_CKPT  = "phase1/VQVAE_phase1-epoch=091-val_loss=0.0064.ckpt"
 PHASE2_CKPT  = "phase2/velocity-epoch=021-val_loss=0.0181-val_mae=0.0847.ckpt"
 DATA_BINARY  = "edm_hse_27drums_full.pkl"
@@ -41,9 +26,6 @@ os.makedirs(OUT_DIR, exist_ok=True)
 metrics = {}
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 1. LOAD MODELS
-# ═══════════════════════════════════════════════════════════════════════════════
 print("="*60)
 print("Loading models...")
 print("="*60)
@@ -60,9 +42,6 @@ phase2.eval()
 print("  Models loaded.")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 2. PHASE 1 RECONSTRUCTION METRICS
-# ═══════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Computing Phase 1 reconstruction metrics...")
 print("="*60)
@@ -110,9 +89,6 @@ print(f"  Mean Hamming distance : {mean_hamming:.4f} ± {np.std(hammings):.4f}")
 print(f"  Codebook perplexity   : {metrics['codebook_perplexity']:.1f} / 256")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 3. PHASE 2 VELOCITY METRICS + FIGURE
-# ═══════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Computing Phase 2 velocity metrics...")
 print("="*60)
@@ -169,7 +145,6 @@ metrics["phase2_val_loss"] = 0.0181  # from training logs
 print(f"  Velocity MAE : {metrics['phase2_mae']:.4f} ± {metrics['phase2_mae_std']:.4f}")
 print(f"  Val loss     : {metrics['phase2_val_loss']:.4f}")
 
-# ── Velocity distribution figure ─────────────────────────────────────────────
 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 fig.suptitle("Velocity Distribution: Training Data vs Phase 2 Predictions",
              fontsize=13, fontweight='bold')
@@ -199,9 +174,6 @@ plt.close()
 print(f"  Saved: {vel_fig_path}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 4. AUDIO CONDITIONING METRICS
-# ═══════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Computing audio conditioning metrics...")
 print("="*60)
@@ -259,9 +231,6 @@ else:
     print("  esc50_results.pkl not found — skipping ESC-50 metrics")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 5. INPUT → OUTPUT EXAMPLE TABLE FIGURE
-# ═══════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Generating input→output example table figure...")
 print("="*60)
@@ -348,9 +317,6 @@ plt.close()
 print(f"  Saved: {table_fig_path}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 6. PIPELINE DIAGRAM
-# ═══════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Generating pipeline diagram...")
 print("="*60)
@@ -420,9 +386,7 @@ plt.close()
 print(f"  Saved: {pipeline_fig_path}")
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 7. SAVE ALL METRICS TO TEXT FILE
-# ═══════════════════════════════════════════════════════════════════════════════
+#save 
 print("\n" + "="*60)
 print("Saving metrics summary...")
 print("="*60)

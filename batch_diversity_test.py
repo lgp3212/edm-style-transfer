@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-Batch diversity test for EDM codebook audio conditioning.
-Downloads samples from ESC-50 and GTZAN, runs audio conditioning,
-and reports which codebook entries get triggered.
-
-Usage:
-    python batch_diversity_test.py
-    python batch_diversity_test.py --n-per-class 3
-"""
-
 import argparse
 import os
 import pickle
@@ -117,7 +106,6 @@ def run_batch_test(files, signatures_path, output_path="batch_results.txt"):
         code_to_files[code].append(f"{dataset}/{category}")
         print(f"  {dataset:6s} | {category:20s} → code {code:3d}")
 
-    # ── Summary ───────────────────────────────────────────────────────────────
     codes_used   = set(r["code"] for r in results if r["code"] >= 0)
     total_files  = len([r for r in results if r["code"] >= 0])
     diversity    = len(codes_used) / total_files if total_files > 0 else 0
