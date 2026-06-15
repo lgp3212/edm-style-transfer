@@ -1,22 +1,3 @@
-#!/usr/bin/env python3
-"""
-Generate novel EDM drum patterns using the LSTM prior + VQ-VAE decoder.
-Optionally condition on input audio via spectral retrieval of starting code.
-
-Usage:
-    # generate 10 random patterns
-    python generate.py
-
-    # condition on input audio
-    python generate.py --input your_audio.wav
-
-    # generate with specific starting code
-    python generate.py --start-code 45
-
-    # control diversity (higher temp = more random, lower = more conservative)
-    python generate.py --temp 0.8 --top-k 5
-"""
-
 import argparse
 import os
 import pickle
@@ -46,7 +27,6 @@ DRUM_NAMES = [
 ]
 
 
-# ── LSTM wrapper for sampling ─────────────────────────────────────────────────
 class LSTMPriorInference:
     def __init__(self, ckpt_path, vocab_size=256, embed_size=128,
                  hidden_size=512, num_layers=2):
@@ -116,7 +96,6 @@ class LSTMPriorInference:
         return np.array(sequence, dtype=np.int32)
 
 
-# ── Audio conditioning ────────────────────────────────────────────────────────
 def get_start_code_from_audio(audio_path, signatures_path):
     import librosa
     
@@ -164,7 +143,7 @@ def get_start_code_from_audio(audio_path, signatures_path):
     return best_code
 
 
-# ── MIDI export ───────────────────────────────────────────────────────────────
+# midi
 def pattern_to_midi(pattern, bpm=128, output_path="output.mid"):
     """pattern: (27, 64) float, values in [0,1]"""
     pm    = pretty_midi.PrettyMIDI(initial_tempo=bpm)
@@ -188,7 +167,7 @@ def pattern_to_midi(pattern, bpm=128, output_path="output.mid"):
     pm.write(output_path)
 
 
-# ── Print grid ────────────────────────────────────────────────────────────────
+# print grid
 def print_grid(pattern, title=""):
     steps = pattern.shape[1]
     markers = "".join("|" if i%16==0 else ("+" if i%4==0 else " ") for i in range(steps))
@@ -204,7 +183,6 @@ def print_grid(pattern, title=""):
     print(f"  Hits: {(pattern>0).sum()}  Density: {(pattern>0).mean()*100:.1f}%")
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--lstm-ckpt",   type=str,
@@ -230,7 +208,7 @@ def main():
     torch.manual_seed(args.seed)
     os.makedirs(args.out_dir, exist_ok=True)
 
-    # ── Load models ───────────────────────────────────────────────────────────
+    # load models
     print("Loading models...")
     lstm = LSTMPriorInference(args.lstm_ckpt)
 
@@ -246,7 +224,7 @@ def main():
     prob_x1 = seq_data["prob_x1"]
     seq_len  = seq_data["seq_len"]
 
-    # ── Determine starting code ───────────────────────────────────────────────
+    # det starting code 
     if args.start_code is not None:
         start_code = args.start_code
         print(f"Using forced start code: {start_code}")
@@ -259,7 +237,7 @@ def main():
         start_code = None  # sample fresh each time from prob_x1
         print("Generating unconditionally (sampling start code from prior)")
 
-    # ── Generate ──────────────────────────────────────────────────────────────
+    # generate 
     print(f"\nGenerating {args.n} patterns  (temp={args.temp}, top_k={args.top_k})")
     print(f"Output: ./{args.out_dir}/\n")
 
@@ -288,7 +266,6 @@ def main():
         pattern_to_midi(pattern, bpm=args.bpm, output_path=midi_path)
         print(f"  → {midi_path}\n")
 
-    # ── Summary ───────────────────────────────────────────────────────────────
     print(f"{'='*72}")
     print(f"  Generated {args.n} patterns")
     print(f"  Mean density : {np.mean(densities):.1f}%")

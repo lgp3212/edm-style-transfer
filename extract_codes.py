@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-Extract codebook index sequences from training data.
-Encodes every sample → sequence of 16 codes → saves as (N, 16) int array.
-
-Run once before training the LSTM prior.
-
-Usage:
-    python extract_codes.py
-"""
-
 import argparse
 import pickle
 import sys
@@ -29,7 +18,6 @@ def main():
     parser.add_argument("--batch-size", type=int, default=512)
     args = parser.parse_args()
 
-    # ── Load model ────────────────────────────────────────────────────────────
     print("Loading model...")
     model = VQVAE.load_from_checkpoint(
         args.phase1_ckpt,
@@ -38,7 +26,6 @@ def main():
     )
     model.eval()
 
-    # ── Load data ─────────────────────────────────────────────────────────────
     print("Loading data...")
     with open(args.data, "rb") as f:
         data = pickle.load(f)
@@ -47,7 +34,6 @@ def main():
         data = np.transpose(data, (0, 2, 1))
     print(f"  Data shape: {data.shape}")
 
-    # ── Extract sequences ─────────────────────────────────────────────────────
     print("Extracting code sequences...")
     all_sequences = []
 
@@ -78,14 +64,13 @@ def main():
     print(f"Sequence length: {sequences.shape[1]} (time steps after encoder)")
     print(f"Vocab size used: {len(np.unique(sequences))} / 256")
 
-    # ── Compute prob_x1 (starting code distribution) ─────────────────────────
+    # xompute prob_x1 (starting code distribution)
     # used at inference to sample the first code
     first_codes = sequences[:, 0]
     counts      = np.bincount(first_codes, minlength=256).astype(float)
     prob_x1     = counts / counts.sum()
     print(f"Top 5 starting codes: {np.argsort(counts)[::-1][:5].tolist()}")
 
-    # ── Save ──────────────────────────────────────────────────────────────────
     out = {
         "sequences": sequences,   # (N, T) int32
         "prob_x1":   prob_x1,     # (256,) starting code distribution

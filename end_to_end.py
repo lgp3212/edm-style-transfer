@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-EDM Style Transfer — Audio-Conditioned Drum Pattern Generation
---------------------------------------------------------------
-Takes arbitrary input audio, extracts spectral features,
-finds the nearest EDM rhythm archetype in the VQ-VAE codebook,
-reconstructs a dense drum pattern via full model forward pass,
-and maps user sounds onto that pattern with Phase 2 velocity.
-
-Usage:
-    python end_to_end.py --input your_audio.wav
-    python end_to_end.py --input your_audio.wav --tempo 128 --output my_output.wav
-    python end_to_end.py --input your_audio.wav --no-click
-"""
-
 import argparse
 import os
 import pickle
@@ -28,10 +13,6 @@ from utils.model import VQVAE
 from train_phase2 import Phase2VelocityModel
 from generate import get_start_code_from_audio
 
-
-########################################
-# AUDIO UTILS
-########################################
 
 def apply_fade(segment, sr, fade_ms=5):
     fade_samples = int(sr * fade_ms / 1000)
@@ -79,10 +60,6 @@ def add_click_track(output, sr, tempo, bars=4):
     return output + click
 
 
-########################################
-# AUDIO DECOMPOSITION
-########################################
-
 def decompose_user_audio(audio_path, sr=44100):
     print(f"  Loading: {audio_path}")
     y, sr = librosa.load(audio_path, sr=sr)
@@ -109,10 +86,6 @@ def decompose_user_audio(audio_path, sr=44100):
     return segments, sr
 
 
-########################################
-# CLUSTERING
-########################################
-
 def cluster_user_sounds(segments, n_clusters=9):
     from sklearn.cluster import KMeans
     n_clusters = min(n_clusters, len(segments))
@@ -121,10 +94,6 @@ def cluster_user_sounds(segments, n_clusters=9):
     labels     = KMeans(n_clusters=n_clusters, random_state=0, n_init=10).fit_predict(features)
     return labels
 
-
-########################################
-# PATTERN GENERATION
-########################################
 
 def generate_pattern(start_code, vqvae, phase2, sequences, data):
     """
@@ -168,10 +137,6 @@ def generate_pattern(start_code, vqvae, phase2, sequences, data):
 
     return rhythm, velocity
 
-
-########################################
-# AUDIO SYNTHESIS
-########################################
 
 def map_sounds_to_pattern(segments, labels, rhythm, velocity,
                           tempo=128, bars=4, sr=44100):
@@ -218,10 +183,6 @@ def map_sounds_to_pattern(segments, labels, rhythm, velocity,
     return output
 
 
-########################################
-# FULL PIPELINE
-########################################
-
 def edm_transfer(
     input_path,
     phase1_ckpt,
@@ -237,7 +198,6 @@ def edm_transfer(
     print("EDM STYLE TRANSFER")
     print("="*60)
 
-    # ── Load models ───────────────────────────────────────────────────────────
     print("\n[0/4] Loading models...")
     phase1 = VQVAE.load_from_checkpoint(
         phase1_ckpt,
@@ -251,7 +211,6 @@ def edm_transfer(
     phase2.load_state_dict(ckpt["state_dict"])
     phase2.eval()
 
-    # ── Load data ─────────────────────────────────────────────────────────────
     with open(sequences_path, "rb") as f:
         seq_data  = pickle.load(f)
     sequences = seq_data["sequences"]   # (N, 16) int32
@@ -262,21 +221,18 @@ def edm_transfer(
     if data.shape[1] != 27:
         data = np.transpose(data, (0, 2, 1))
 
-    # ── Decompose input audio ─────────────────────────────────────────────────
     print("\n[1/4] Decomposing input audio...")
     segments, sr = decompose_user_audio(input_path)
     if len(segments) == 0:
         print("ERROR: No sound events detected.")
         return
 
-    # ── Audio conditioning ────────────────────────────────────────────────────
     print("\n[2/4] Audio conditioning...")
     start_code = get_start_code_from_audio(input_path, signatures_path)
     if start_code is None:
         start_code = int(np.random.choice(256))
         print(f"  No onsets detected, using random code {start_code}")
 
-    # ── Generate pattern ──────────────────────────────────────────────────────
     print("\n[3/4] Generating EDM pattern...")
     rhythm, velocity = generate_pattern(start_code, phase1, phase2, sequences, data)
     hits = int((rhythm > 0).sum())
@@ -284,7 +240,6 @@ def edm_transfer(
     if velocity.max() > 0:
         print(f"  Velocity    : mean={velocity[velocity>0].mean():.3f}  max={velocity.max():.3f}")
 
-    # ── Synthesize ────────────────────────────────────────────────────────────
     print("\n[4/4] Synthesizing output...")
     labels = cluster_user_sounds(segments, n_clusters=min(27, len(segments)))
     output = map_sounds_to_pattern(segments, labels, rhythm, velocity,
@@ -304,9 +259,6 @@ def edm_transfer(
     return output
 
 
-########################################
-# MAIN
-########################################
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -1,21 +1,3 @@
-#!/usr/bin/env python3
-"""
-Comprehensive VQ-VAE codebook analysis.
-Produces a multi-panel figure for the DAFx paper.
-
-Panels:
-  1. UMAP of codebook vectors (colored by cluster)
-  2. PCA of codebook vectors (colored by cluster)
-  3. Cluster dendrogram
-  4. Per-cluster drum density heatmap
-  5. Spectral signature per cluster
-  6. Codebook usage histogram
-
-Usage:
-    python analyze_codebook.py
-    python analyze_codebook.py --n-clusters 8 --out codebook_analysis.png
-"""
-
 import argparse
 import pickle
 import sys
@@ -151,7 +133,7 @@ def main():
 
     np.random.seed(args.seed)
 
-    # ── Load ──────────────────────────────────────────────────────────────────
+    # load
     model, data = load_model_and_data(args.phase1_ckpt, args.data)
     cb_vectors  = get_codebook_vectors(model)              # (256, 16)
     usage, avg_patterns, counts = get_usage_and_patterns(model, data)
@@ -160,14 +142,14 @@ def main():
     print(f"Codebook vectors shape : {cb_vectors.shape}")
     print(f"Used entries           : {(usage > 0).sum()} / {len(usage)}")
 
-    # ── Clustering ────────────────────────────────────────────────────────────
+    # clustering
     print("Clustering codebook vectors...")
     scaler     = StandardScaler()
     cb_scaled  = scaler.fit_transform(cb_vectors)
     linkage_mat = linkage(pdist(cb_scaled), method='ward')
     cluster_labels = fcluster(linkage_mat, t=args.n_clusters, criterion='maxclust') - 1
 
-    # ── Dimensionality reduction ───────────────────────────────────────────────
+    # dim red
     print("Running PCA...")
     pca      = PCA(n_components=2, random_state=args.seed)
     cb_pca   = pca.fit_transform(cb_scaled)
@@ -176,7 +158,7 @@ def main():
     reducer  = umap.UMAP(n_components=2, random_state=args.seed, n_neighbors=15, min_dist=0.1)
     cb_umap  = reducer.fit_transform(cb_scaled)
 
-    # ── Compute per-cluster avg drum density ──────────────────────────────────
+    # compute per-cluster avg drum density 
     cluster_drum_density = np.zeros((args.n_clusters, 27))
     cluster_sizes        = np.zeros(args.n_clusters)
     for c in range(args.n_clusters):
@@ -187,7 +169,7 @@ def main():
             cluster_drum_density[c] = (cluster_avg > 0.01).mean(axis=1)  # per drum
             cluster_sizes[c] = mask.sum()
 
-    # ── Plot ──────────────────────────────────────────────────────────────────
+    # plot
     print("Plotting...")
     palette = sns.color_palette("tab10", args.n_clusters)
     colors  = [palette[c] for c in cluster_labels]
@@ -198,7 +180,7 @@ def main():
 
     gs = gridspec.GridSpec(3, 3, figure=fig, hspace=0.45, wspace=0.35)
 
-    # ── Panel 1: UMAP ─────────────────────────────────────────────────────────
+    # UMAP
     ax1 = fig.add_subplot(gs[0, 0])
     scatter = ax1.scatter(cb_umap[:, 0], cb_umap[:, 1],
                           c=colors, s=30 + usage / usage.max() * 80,
@@ -212,7 +194,7 @@ def main():
         ax1.annotate(f"C{c}", (cx, cy), fontsize=8, fontweight='bold',
                      color=palette[c], ha='center')
 
-    # ── Panel 2: PCA ──────────────────────────────────────────────────────────
+    # pca
     ax2 = fig.add_subplot(gs[0, 1])
     ax2.scatter(cb_pca[:, 0], cb_pca[:, 1],
                 c=colors, s=30 + usage / usage.max() * 80,
@@ -221,7 +203,7 @@ def main():
     ax2.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]*100:.1f}%)")
     ax2.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]*100:.1f}%)")
 
-    # ── Panel 3: Usage histogram ───────────────────────────────────────────────
+    # hist
     ax3 = fig.add_subplot(gs[0, 2])
     sorted_usage = np.sort(usage)[::-1]
     bar_colors   = [palette[cluster_labels[np.argsort(usage)[::-1][i]]]
@@ -233,7 +215,7 @@ def main():
     ax3.axhline(usage.mean(), color='black', linestyle='--', alpha=0.5, label=f'mean={usage.mean():.1f}')
     ax3.legend(fontsize=8)
 
-    # ── Panel 4: Dendrogram ───────────────────────────────────────────────────
+    # dendro
     ax4 = fig.add_subplot(gs[1, :2])
     dendrogram(linkage_mat, ax=ax4, no_labels=True, color_threshold=0,
                above_threshold_color='grey', truncate_mode='lastp', p=40)
@@ -241,7 +223,7 @@ def main():
     ax4.set_xlabel("Codebook entries")
     ax4.set_ylabel("Distance")
 
-    # ── Panel 5: Spectral signatures per cluster ──────────────────────────────
+    # spectral sig per cluster
     ax5 = fig.add_subplot(gs[1, 2])
     cluster_spectral = np.zeros((args.n_clusters, 4))
     feat_names = ["Density", "Peak/drum", "Regularity", "Hit count"]
@@ -268,7 +250,7 @@ def main():
     ax5.set_title("Spectral Signatures per Cluster\n(normalized 0-1)", fontsize=11)
     ax5.tick_params(axis='x', rotation=30)
 
-    # ── Panel 6: Per-cluster drum density heatmap ─────────────────────────────
+    # er-cluster drum density heatmap 
     ax6 = fig.add_subplot(gs[2, :])
     # only show drums that have any activity
     active_drums = np.where(cluster_drum_density.max(axis=0) > 0.001)[0]
@@ -286,11 +268,10 @@ def main():
     ax6.set_title("Average Drum Hit Density per Cluster\n(fraction of time steps with a hit)", fontsize=11)
     ax6.tick_params(axis='x', rotation=45)
 
-    # ── Save ──────────────────────────────────────────────────────────────────
     plt.savefig(args.out, dpi=150, bbox_inches='tight', facecolor='white')
     print(f"\nSaved: {args.out}")
 
-    # ── Print cluster summary ─────────────────────────────────────────────────
+    # print 
     print(f"\n{'='*60}")
     print(f"CLUSTER SUMMARY ({args.n_clusters} clusters)")
     print(f"{'='*60}")
