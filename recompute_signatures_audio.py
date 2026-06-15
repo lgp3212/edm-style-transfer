@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Recompute codebook signatures in true audio space.
-Extracts librosa features from original WAV files and averages per codebook entry.
-This fixes the retrieval problem where all audio mapped to the same codebook entry.
+recompute codebook signatures in true audio space,
+extracts librosa features from original WAV files and averages per codebook entry
+fixes the retrieval problem where all audio mapped to the same codebook entry
 
-Usage:
+usage:
     python recompute_signatures_audio.py --wav-dir edm_hse_id_001-004_wav
 """
 

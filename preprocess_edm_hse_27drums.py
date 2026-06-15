@@ -1,15 +1,3 @@
-#!/usr/bin/env python3
-"""
-Process EDM-HSE with 27 Labeled Drums using JSON + Clustering
--------------------------------------------------------------
-
-Uses JSON metadata to constrain clustering of onsets into drum types.
-Creates labeled 27×64 arrays with velocity bins [0-4].
-
-Usage:
-    python preprocess_edm_hse_27drums.py --wav-dir /path/to/wavs --json-dir /path/to/json --max-files 100
-"""
-
 import numpy as np
 import librosa
 import pickle

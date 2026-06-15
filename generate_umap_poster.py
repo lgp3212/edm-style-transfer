@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-"""
-Generate a clean UMAP-only codebook figure for the poster.
-Just the UMAP projection colored by cluster — no heatmaps, no dendrogram.
-
-Usage:
-    python generate_umap_poster.py
-"""
-
 import pickle
 import sys
 import numpy as np
@@ -26,17 +17,15 @@ OUT_DIR     = "poster_assets"
 import os
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ── Load model ────────────────────────────────────────────────────────────────
+# load mdoel
 print("Loading model...")
 model = VQVAE.load_from_checkpoint(
     PHASE1_CKPT, ch=128, num_pitch=27, latent_dim=16, num_embed=256, thres=0.5,
     map_location="cpu", weights_only=False)
 model.eval()
 
-# ── Get codebook vectors ──────────────────────────────────────────────────────
 cb = model.quantize.embed.T.detach().numpy()  # (256, 16)
 
-# ── Get usage counts ──────────────────────────────────────────────────────────
 with open("edm_hse_27drums_full.pkl", "rb") as f:
     raw = pickle.load(f)
 data = (raw > 0).astype("float32")
@@ -60,7 +49,7 @@ with torch.no_grad():
         for code in dom.numpy():
             usage[code] += 1
 
-# ── Cluster ───────────────────────────────────────────────────────────────────
+# cluster 
 scaler   = StandardScaler()
 cb_scaled = scaler.fit_transform(cb)
 linkage_mat   = linkage(pdist(cb_scaled), method='ward')
@@ -83,12 +72,12 @@ CLUSTER_COLORS = [
     "#9b59b6", "#1abc9c", "#e67e22", "#34495e"
 ]
 
-# ── UMAP ──────────────────────────────────────────────────────────────────────
+#umap
 print("Running UMAP...")
 reducer  = umap.UMAP(n_components=2, random_state=42, n_neighbors=30, min_dist=0.1)
 cb_umap  = reducer.fit_transform(cb_scaled)
 
-# ── Plot ──────────────────────────────────────────────────────────────────────
+#plot
 fig, ax = plt.subplots(figsize=(8, 6))
 
 for c in range(8):
