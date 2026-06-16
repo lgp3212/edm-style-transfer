@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From Arbitrary Audio to EDM — Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #111;
+      padding: 3rem 2rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: #111;
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .links {
+      font-size: 0.9rem;
+      margin: 0.8rem 0 2rem;
+    }
+    .links a {
+      color: #0066cc;
+      text-decoration: none;
+      margin-right: 1.2rem;
+    }
+    .links a:hover { text-decoration: underline; }
+
+    .description {
+      background: #f7f7f7;
+      border-left: 3px solid #111;
+      padding: 1rem 1.2rem;
+      border-radius: 4px;
+      margin-bottom: 2.5rem;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    .description strong { color: #111; }
+
+    .workflow-note {
+      background: #fff8e6;
+      border-left: 3px solid #f0a500;
+      padding: 1rem 1.2rem;
+      border-radius: 4px;
+      margin-bottom: 2.5rem;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #555;
+    }
+
+    h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #999;
+      margin-bottom: 1.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+    }
+
+    .section { margin-bottom: 3rem; }
+
+    .examples { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .example {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 1.2rem;
+      border: 1px solid #e8e8e8;
+    }
+
+    .example-header {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      border-radius: 3px;
+      padding: 2px 8px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tag.nature   { background: #e6f4ea; color: #2d7a3a; }
+    .tag.urban    { background: #ede9fb; color: #5b3fa0; }
+    .tag.human    { background: #fdecea; color: #c0392b; }
+    .tag.domestic { background: #fef6e4; color: #a07030; }
+    .tag.animals  { background: #e4f0fb; color: #1a5f8c; }
+
+    .example-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .codebook-tag {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: #aaa;
+      font-style: italic;
+    }
+
+    /* two-column layout */
+    .audio-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* three-column layout for full production */
+    .audio-triple {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .audio-item label {
+      display: block;
+      font-size: 0.78rem;
+      color: #888;
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    .audio-item .label-note {
+      font-size: 0.72rem;
+      color: #bbb;
+      font-style: italic;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    audio {
+      width: 100%;
+      height: 36px;
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+      font-size: 0.82rem;
+      color: #aaa;
+    }
+    footer a { color: #0066cc; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <h1>From Arbitrary Audio to EDM</h1>
+  <p class="subtitle">Spectral Retrieval of Discrete Rhythm Archetypes with Timbral Preservation</p>
+  <p class="subtitle">Lindsey Pietrewicz · DAFx 2026</p>
+
+  <div class="links">
+    <a href="https://github.com/lgp3212/edm-style-transfer">GitHub →</a>
+    <a href="#">Paper →</a>
+  </div>
+
+  <div class="description">
+    A VQ-VAE trained on 7,999 EDM drum loops learns a codebook of <strong>256 discrete rhythm archetypes</strong>.
+    Spectral features from arbitrary input audio select the nearest archetype via nearest-neighbor retrieval.
+    A velocity decoder predicts per-hit dynamics. The input's own sounds are placed at hit positions —
+    producing EDM drums <strong>in the input's timbre</strong>.
+  </div>
+
+  <div class="workflow-note">
+    <strong>The intended workflow:</strong> a musician provides any audio — field recordings, voice, instruments,
+    found sounds — and the system outputs an EDM drum pattern built from those sounds.
+    The examples marked <em>Producer remix</em> below show what happens next: a producer took the model output
+    and used it as raw material to build a full track, demonstrating how this tool fits into a real
+    music production workflow.
+  </div>
+
+  <!-- FULL PRODUCTION EXAMPLES -->
+  <div class="section">
+    <h2>Full production examples — original · model output · producer remix</h2>
+    <div class="examples">
+
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag urban">Urban</span>
+          <span class="example-name">Chainsaw</span>
+          <span class="codebook-tag">Codebook #133 — Snare / impact</span>
+        </div>
+        <div class="audio-triple">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_input.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_output.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Producer remix <span class="label-note">from model output</span></label>
+            <audio controls src="docs/FULL_PRODUCTION/chainsaw/full_beat.wav"></audio>
+          </div>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag urban">Urban</span>
+          <span class="example-name">Helicopter</span>
+          <span class="codebook-tag">Codebook #202 — Kick + HH</span>
+        </div>
+        <div class="audio-triple">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/FULL_PRODUCTION/helicopter/model_input.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/FULL_PRODUCTION/helicopter/model_output.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Producer remix <span class="label-note">from model output</span></label>
+            <audio controls src="docs/FULL_PRODUCTION/helicopter/full_beat.m4a"></audio>
+          </div>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag nature">Nature</span>
+          <span class="example-name">Birds</span>
+          <span class="codebook-tag">Codebook #244 — HH dense</span>
+        </div>
+        <div class="audio-triple">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/FULL_PRODUCTION/birds/model_input.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/FULL_PRODUCTION/birds/model_output.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Producer remix <span class="label-note">from model output</span></label>
+            <audio controls src="docs/FULL_PRODUCTION/birds/full_beat.wav"></audio>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODEL OUTPUT EXAMPLES -->
+  <div class="section">
+    <h2>Additional Model output examples — original · model output</h2>
+    <div class="examples">
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag urban">Urban</span>
+          <span class="example-name">Church bells</span>
+          <span class="codebook-tag">Codebook #25 — Kick + HH</span>
+        </div>
+        <div class="audio-pair">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/church_bells/church.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/church_bells/remix_church.wav"></audio>
+          </div>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag human">Human</span>
+          <span class="example-name">Crying baby</span>
+          <span class="codebook-tag">Codebook #135 — Clap driven</span>
+        </div>
+        <div class="audio-pair">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/crying_baby/crying.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/crying_baby/remix_crying.wav"></audio>
+          </div>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="example-header">
+          <span class="tag human">Human</span>
+          <span class="example-name">Footsteps</span>
+          <span class="codebook-tag">Codebook #250 — Sparse</span>
+        </div>
+        <div class="audio-pair">
+          <div class="audio-item">
+            <label>Original</label>
+            <audio controls src="docs/footsteps/footsteps.wav"></audio>
+          </div>
+          <div class="audio-item">
+            <label>Model output</label>
+            <audio controls src="docs/footsteps/remix_footsteps.wav"></audio>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    Lindsey Pietrewicz · DAFx 2026 ·
+    <a href="https://github.com/lgp3212/edm-style-transfer">github.com/lgp3212/edm-style-transfer</a>
+  </footer>
+
+</body>
+</html>
