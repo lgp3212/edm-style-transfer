@@ -171,108 +171,33 @@
 </head>
 <body>
 
-  <h1>From Arbitrary Audio to EDM</h1>
+  <h1>From Arbitrary Audio to Electronic Dance Music (EDM)</h1>
   <p class="subtitle">Spectral Retrieval of Discrete Rhythm Archetypes with Timbral Preservation</p>
   <p class="subtitle">Lindsey Pietrewicz · DAFx 2026</p>
 
   <div class="links">
     <a href="https://github.com/lgp3212/edm-style-transfer">GitHub →</a>
-    <a href="#">Paper →</a>
   </div>
 
   <div class="description">
     A VQ-VAE trained on 7,999 EDM drum loops learns a codebook of <strong>256 discrete rhythm archetypes</strong>.
     Spectral features from arbitrary input audio select the nearest archetype via nearest-neighbor retrieval.
-    A velocity decoder predicts per-hit dynamics. The input's own sounds are placed at hit positions —
-    producing EDM drums <strong>in the input's timbre</strong>.
+    A velocity decoder predicts per-hit dynamics. The input's own sounds are placed at hit positions, producing EDM drums <strong>in the input's timbre</strong>.
   </div>
 
   <div class="workflow-note">
     <strong>The intended workflow:</strong> a musician provides any audio — field recordings, voice, instruments,
     found sounds — and the system outputs an EDM drum pattern built from those sounds.
-    The examples marked <em>Producer remix</em> below show what happens next: a producer took the model output
+    The examples marked <em>Producer remix</em> below show what happens next: producer Beau Bialow took the model output
     and used it as raw material to build a full track, demonstrating how this tool fits into a real
     music production workflow.
   </div>
 
-  <!-- FULL PRODUCTION EXAMPLES -->
-  <div class="section">
-    <h2>Full production examples — original · model output · producer remix</h2>
-    <div class="examples">
 
-      <div class="example">
-        <div class="example-header">
-          <span class="tag nature">Nature</span>
-          <span class="example-name">Birds</span>
-          <span class="codebook-tag">Codebook #244 — HH dense</span>
-        </div>
-        <div class="audio-triple">
-          <div class="audio-item">
-            <label>Original</label>
-            <audio controls src="docs/FULL_PRODUCTION/birds/model_input.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Model output</label>
-            <audio controls src="docs/FULL_PRODUCTION/birds/model_output.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Producer remix <span class="label-note">from model output</span></label>
-            <audio controls src="docs/FULL_PRODUCTION/birds/full_beat.wav"></audio>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="example">
-        <div class="example-header">
-          <span class="tag urban">Urban</span>
-          <span class="example-name">Chainsaw</span>
-          <span class="codebook-tag">Codebook #133 — Snare / impact</span>
-        </div>
-        <div class="audio-triple">
-          <div class="audio-item">
-            <label>Original</label>
-            <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_input.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Model output</label>
-            <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_output.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Producer remix <span class="label-note">from model output</span></label>
-            <audio controls src="docs/FULL_PRODUCTION/chainsaw/full_beat.wav"></audio>
-          </div>
-        </div>
-      </div>
-
-      <div class="example">
-        <div class="example-header">
-          <span class="tag urban">Urban</span>
-          <span class="example-name">Helicopter</span>
-          <span class="codebook-tag">Codebook #202 — Kick + HH</span>
-        </div>
-        <div class="audio-triple">
-          <div class="audio-item">
-            <label>Original</label>
-            <audio controls src="docs/FULL_PRODUCTION/helicopter/model_input.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Model output</label>
-            <audio controls src="docs/FULL_PRODUCTION/helicopter/model_output.wav"></audio>
-          </div>
-          <div class="audio-item">
-            <label>Producer remix <span class="label-note">from model output</span></label>
-            <audio controls src="docs/FULL_PRODUCTION/helicopter/full_beat.m4a"></audio>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
   <!-- MODEL OUTPUT EXAMPLES -->
   <div class="section">
-    <h2>Additional Model output examples — original · model output</h2>
+    <h2>Model output examples — original · model output</h2>
     <div class="examples">
 
       <div class="example">
@@ -331,6 +256,81 @@
 
     </div>
   </div>
+
+    <!-- FULL PRODUCTION EXAMPLES -->
+    <div class="section">
+      <h2>Full production examples — original · model output · producer remix</h2>
+      <div class="examples">
+  
+        <div class="example">
+          <div class="example-header">
+            <span class="tag nature">Nature</span>
+            <span class="example-name">Birds</span>
+            <span class="codebook-tag">Codebook #244 — HH dense</span>
+          </div>
+          <div class="audio-triple">
+            <div class="audio-item">
+              <label>Original</label>
+              <audio controls src="docs/FULL_PRODUCTION/birds/model_input.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Model output</label>
+              <audio controls src="docs/FULL_PRODUCTION/birds/model_output.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Producer remix <span class="label-note">from model output</span></label>
+              <audio controls src="docs/FULL_PRODUCTION/birds/full_beat.wav"></audio>
+            </div>
+          </div>
+        </div>
+  
+  
+        <div class="example">
+          <div class="example-header">
+            <span class="tag urban">Urban</span>
+            <span class="example-name">Chainsaw</span>
+            <span class="codebook-tag">Codebook #133 — Snare / impact</span>
+          </div>
+          <div class="audio-triple">
+            <div class="audio-item">
+              <label>Original</label>
+              <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_input.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Model output</label>
+              <audio controls src="docs/FULL_PRODUCTION/chainsaw/model_output.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Producer remix <span class="label-note">from model output</span></label>
+              <audio controls src="docs/FULL_PRODUCTION/chainsaw/full_beat.wav"></audio>
+            </div>
+          </div>
+        </div>
+  
+        <div class="example">
+          <div class="example-header">
+            <span class="tag urban">Urban</span>
+            <span class="example-name">Helicopter</span>
+            <span class="codebook-tag">Codebook #202 — Kick + HH</span>
+          </div>
+          <div class="audio-triple">
+            <div class="audio-item">
+              <label>Original</label>
+              <audio controls src="docs/FULL_PRODUCTION/helicopter/model_input.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Model output</label>
+              <audio controls src="docs/FULL_PRODUCTION/helicopter/model_output.wav"></audio>
+            </div>
+            <div class="audio-item">
+              <label>Producer remix <span class="label-note">from model output</span></label>
+              <audio controls src="docs/FULL_PRODUCTION/helicopter/full_beat.m4a"></audio>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
 
   <footer>
     Lindsey Pietrewicz · DAFx 2026 ·
